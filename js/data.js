@@ -57,9 +57,10 @@ const CARDS = [
 
   // ---------------- DNS ----------------
   { type: "concept", topicId: "dns", title: "What DNS actually does",
+    diagram: "dns-resolution-chain",
     body: [
       "DNS is the system that maps human-readable names like example.com to the IP addresses machines use to route traffic.",
-      "A lookup usually walks a chain: your resolver checks its cache, then asks a root server, then a top-level-domain server, then the domain's authoritative server, caching the answer at each hop along the way."
+      "A lookup walks a chain: resolver checks cache, asks root, TLD, then authoritative server, caching at each hop."
     ]},
   { type: "flashcard", topicId: "dns",
     front: "Why does DNS rely so heavily on caching at every layer?",
@@ -81,9 +82,10 @@ const CARDS = [
 
   // ---------------- LOAD BALANCING ----------------
   { type: "concept", topicId: "load-balancing", title: "Why put something in front of your servers",
+    diagram: "load-balancer-topology",
     body: [
-      "A load balancer sits between clients and a pool of servers, distributing incoming requests so no single server gets overwhelmed while others sit idle.",
-      "Beyond spreading load, it also gives you a single stable entry point and a place to detect and route around unhealthy servers via health checks."
+      "A load balancer sits between clients and servers, distributing incoming requests so no single machine gets overwhelmed.",
+      "It provides a single stable entry point and detects/routes around unresponsive servers via health checks."
     ]},
   { type: "flashcard", topicId: "load-balancing",
     front: "Round robin vs. least connections — what's the difference in strategy?",
@@ -110,9 +112,10 @@ const CARDS = [
 
   // ---------------- CACHING ----------------
   { type: "concept", topicId: "caching", title: "The idea behind caching",
+    diagram: "cache-aside-flow",
     body: [
-      "A cache stores the result of expensive work — a database query, a computed value, a rendered page — so a later request can reuse it instead of redoing the work.",
-      "The hard part isn't storing data, it's deciding what to store, for how long, and how to invalidate it once the underlying data changes."
+      "A cache stores results of expensive work so future requests can reuse them instead of redoing work.",
+      "In cache-aside, the app checks cache first; on a miss, it reads from the database and updates the cache."
     ]},
   { type: "flashcard", topicId: "caching",
     front: "What's a 'cache-aside' (lazy loading) pattern?",
@@ -132,9 +135,10 @@ const CARDS = [
 
   // ---------------- CDN ----------------
   { type: "concept", topicId: "cdn", title: "Why a CDN exists",
+    diagram: "cdn-edge-network",
     body: [
-      "A content delivery network is a set of geographically distributed servers (edge nodes) that cache and serve content close to the user, instead of every request traveling back to one origin server.",
-      "This cuts latency (shorter physical distance), reduces load on the origin, and adds resilience — if one edge location has trouble, traffic can shift to another."
+      "A CDN uses geographically distributed edge servers to cache and serve content close to users.",
+      "This cuts physical latency, relieves origin server load, and routes around regional outages."
     ]},
   { type: "flashcard", topicId: "cdn",
     front: "What kind of content is a CDN best suited for, and why?",
@@ -199,9 +203,10 @@ const CARDS = [
 
   // ---------------- REPLICATION ----------------
   { type: "concept", topicId: "replication", title: "Copying data on purpose",
+    diagram: "primary-replica-replication",
     body: [
-      "Replication keeps multiple copies of the same data on different machines, usually one primary that accepts writes and one or more replicas that serve reads.",
-      "This buys you read scalability (spread reads across replicas) and durability (if the primary dies, a replica can take over), at the cost of managing replication lag and failover."
+      "Replication maintains copies of data across machines: one primary handles writes while replicas handle read traffic.",
+      "This increases read capacity and reliability, though you must account for replication lag."
     ]},
   { type: "flashcard", topicId: "replication",
     front: "What is 'replication lag'?",
@@ -223,9 +228,10 @@ const CARDS = [
 
   // ---------------- SHARDING ----------------
   { type: "concept", topicId: "sharding", title: "Splitting data across machines",
+    diagram: "db-sharding-split",
     body: [
-      "Sharding (a form of partitioning) splits a large dataset across multiple database instances, each holding a subset of the rows, so no single machine has to hold or serve it all.",
-      "The key design decision is the shard key — the field used to decide which shard a row lives on — since a bad choice can create hot shards that get disproportionate traffic."
+      "Sharding partitions a large dataset across multiple DB nodes based on a shard key so no single machine holds all data.",
+      "Choosing a good shard key avoids hot shards that get disproportionate traffic."
     ]},
   { type: "flashcard", topicId: "sharding",
     front: "What is a 'hot shard' and why is it a problem?",
@@ -247,9 +253,10 @@ const CARDS = [
 
   // ---------------- CAP THEOREM ----------------
   { type: "concept", topicId: "cap-theorem", title: "Consistency, Availability, Partition tolerance",
+    diagram: "cap-theorem-triangle",
     body: [
-      "CAP theorem says that during a network partition, a distributed system must choose between consistency (every read sees the latest write) and availability (every request gets a response, even if not the latest data).",
-      "Partition tolerance isn't really optional in real distributed systems — networks do fail — so in practice CAP is mostly a C-vs-A tradeoff during partitions, not a free choice of any two."
+      "During a network partition, a distributed system must choose between Consistency (latest data) and Availability (always respond).",
+      "Because network partitions are inevitable in distributed systems, real systems trade off CP vs AP."
     ]},
   { type: "flashcard", topicId: "cap-theorem",
     front: "During a network partition, what does an AP system prioritize?",
@@ -271,9 +278,10 @@ const CARDS = [
 
   // ---------------- CONSISTENT HASHING ----------------
   { type: "concept", topicId: "consistent-hashing", title: "Why not just use hash % N?",
+    diagram: "consistent-hashing-ring",
     body: [
-      "Simple modulo hashing (key hash % number of servers) works until you add or remove a server — then almost every key maps to a different server, causing a massive, unnecessary reshuffle.",
-      "Consistent hashing places both servers and keys on a conceptual ring; each key belongs to the next server clockwise. Adding or removing one server only affects the keys near it on the ring, not the whole dataset."
+      "Modulo hashing reshuffles almost all keys when nodes change. Consistent hashing maps keys and nodes onto a circular ring.",
+      "Each key belongs to the next clockwise node, so adding or removing nodes only affects neighboring keys."
     ]},
   { type: "flashcard", topicId: "consistent-hashing",
     front: "What problem do 'virtual nodes' solve in consistent hashing?",
@@ -295,9 +303,10 @@ const CARDS = [
 
   // ---------------- MESSAGE QUEUES ----------------
   { type: "concept", topicId: "message-queues", title: "Decoupling producers from consumers",
+    diagram: "message-queue-decoupling",
     body: [
-      "A message queue lets one part of a system (the producer) hand off work as a message, without waiting for another part (the consumer) to process it immediately.",
-      "This smooths out traffic spikes — the queue absorbs bursts and the consumer works through them at its own pace — and lets producer and consumer scale, deploy, and fail independently."
+      "A message queue lets producers hand off tasks as messages without waiting for consumers to finish processing.",
+      "This buffers traffic bursts so workers can process jobs asynchronously at their own rate."
     ]},
   { type: "flashcard", topicId: "message-queues",
     front: "What's the practical difference between 'at-least-once' and 'exactly-once' delivery?",
@@ -367,9 +376,10 @@ const CARDS = [
 
   // ---------------- API GATEWAY ----------------
   { type: "concept", topicId: "api-gateway", title: "One front door for many services",
+    diagram: "api-gateway-fanout",
     body: [
-      "An API gateway sits between clients and a set of backend services, acting as a single entry point that can handle routing, authentication, rate limiting, and request/response transformation in one place.",
-      "It saves every client from needing to know the internal layout of your services, and saves every service from re-implementing the same cross-cutting concerns."
+      "An API gateway acts as a single entry point that routes incoming requests to backend microservices.",
+      "It centralizes cross-cutting concerns like authentication, rate limiting, and request transformation."
     ]},
   { type: "flashcard", topicId: "api-gateway",
     front: "Name two cross-cutting concerns an API gateway commonly centralizes.",
