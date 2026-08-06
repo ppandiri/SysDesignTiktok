@@ -217,6 +217,11 @@ function kickerHtml(topic, typeLabel) {
       <span class="card-type-label">${typeLabel}</span>
     </div>
   `;
+function diagramHtml(card) {
+  if (card.diagram && typeof DIAGRAMS !== "undefined" && DIAGRAMS[card.diagram]) {
+    return `<div class="card-diagram">${DIAGRAMS[card.diagram]}</div>`;
+  }
+  return "";
 }
 
 function renderConceptCard(card, topic) {
@@ -225,6 +230,7 @@ function renderConceptCard(card, topic) {
   el.innerHTML = `
     ${kickerHtml(topic, "Concept")}
     <h2>${card.title}</h2>
+    ${diagramHtml(card)}
     <div class="body-text">${card.body.map(p => `<p>${p}</p>`).join("")}</div>
     <div class="swipe-hint"><span class="chev">⌄</span> swipe up to continue</div>
   `;
@@ -238,6 +244,7 @@ function renderFlashCard(card, topic) {
     ${kickerHtml(topic, "Flashcard")}
     <div class="flash-face" style="flex:1; justify-content:center; display:flex; flex-direction:column;">
       <div class="flash-q">${card.front}</div>
+      ${diagramHtml(card)}
       <div class="flash-a">${card.back}</div>
     </div>
     <div class="flash-tap-hint">tap card to reveal answer</div>
@@ -271,6 +278,7 @@ function renderMCCard(card, topic) {
   el.innerHTML = `
     ${kickerHtml(topic, "Multiple choice")}
     <h2>${card.question}</h2>
+    ${diagramHtml(card)}
     <div class="q-options">
       ${card.options.map((opt, i) => `<button class="q-option" data-i="${i}">${opt}</button>`).join("")}
     </div>
@@ -301,6 +309,7 @@ function renderTFCard(card, topic) {
   el.innerHTML = `
     ${kickerHtml(topic, "True or false")}
     <h2>${card.statement}</h2>
+    ${diagramHtml(card)}
     <div class="tf-row">
       <button class="q-option" data-v="1">True</button>
       <button class="q-option" data-v="0">False</button>
