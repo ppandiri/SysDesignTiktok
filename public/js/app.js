@@ -2,7 +2,7 @@
 // APP: onboarding flow, feed rendering, progress page, nav.
 // ============================================================
 
-let state = loadState();
+let state = null;
 let instanceCounter = 0;
 
 if (document.readyState === "loading") {
@@ -11,10 +11,13 @@ if (document.readyState === "loading") {
   init();
 }
 
-function init() {
+async function init() {
   try {
+    state = await loadState();
     state = touchStreak(state);
-    saveState(state);
+    await saveState(state);
+
+    renderAuthUI();
 
     if (state.onboarded) {
       showScreen("feed");
@@ -30,9 +33,33 @@ function init() {
     console.error("Init error, resetting state to default:", err);
     state = resetState();
     state.onboarded = true;
-    saveState(state);
+    await saveState(state);
+    renderAuthUI();
     showScreen("feed");
     seedFeed();
+  }
+}
+
+function renderAuthUI() {
+  const container = document.getElementById("auth-container");
+  if (!container) return;
+
+  if (typeof currentUser !== "undefined" && currentUser) {
+    const nameOrEmail = currentUser.name || currentUser.email || "Account";
+    const avatar = currentUser.image
+      ? `<img src="${currentUser.image}" class="user-avatar" alt="${nameOrEmail}" />`
+      : "";
+    container.innerHTML = `
+      <div class="user-pill" title="${currentUser.email || ''}">
+        ${avatar}
+        <span>${nameOrEmail.split(" ")[0]}</span>
+        <a href="/api/auth/signout" class="auth-out-link">Out</a>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <a href="/api/auth/signin/google" class="auth-btn">Sign in</a>
+    `;
   }
 }
 
@@ -236,7 +263,7 @@ function renderObTopic() {
   }
 }
 
-function finishOnboarding() {
+async function finishOnboarding() {
   TOPICS.forEach(t => {
     if (obRatings[t.id]) {
       state.topics[t.id].familiarity = levelToFamiliarity(obRatings[t.id]);
@@ -245,7 +272,7 @@ function finishOnboarding() {
     }
   });
   state.onboarded = true;
-  saveState(state);
+  await saveState(state);
   showScreen("feed");
   seedFeed();
 }
