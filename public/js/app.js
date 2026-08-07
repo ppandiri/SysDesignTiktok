@@ -41,15 +41,20 @@ async function init() {
 }
 
 function renderAuthUI() {
-  const container = document.getElementById("auth-container");
-  if (!container) return;
+  const containers = [
+    document.getElementById("auth-container"),
+    document.getElementById("ob-auth-container")
+  ].filter(Boolean);
 
+  if (containers.length === 0) return;
+
+  let html = "";
   if (typeof currentUser !== "undefined" && currentUser) {
     const nameOrEmail = currentUser.name || currentUser.email || "Account";
     const avatar = currentUser.image
       ? `<img src="${currentUser.image}" class="user-avatar" alt="${nameOrEmail}" />`
       : "";
-    container.innerHTML = `
+    html = `
       <div class="user-pill" title="${currentUser.email || ''}">
         ${avatar}
         <span>${nameOrEmail.split(" ")[0]}</span>
@@ -57,10 +62,12 @@ function renderAuthUI() {
       </div>
     `;
   } else {
-    container.innerHTML = `
+    html = `
       <a href="/api/auth/signin/google" class="auth-btn">Sign in</a>
     `;
   }
+
+  containers.forEach(c => { c.innerHTML = html; });
 }
 
 function showScreen(name) {
