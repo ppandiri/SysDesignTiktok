@@ -9,18 +9,24 @@ let recentTopicHistory = []; // in-memory only, resets on reload — avoids imme
 let cardsSinceQuestion = 0;
 
 function topicWeight(topicState) {
-  const familiarity = topicState.familiarity; // 0-100
+  if (!topicState) return 100;
+  const familiarity = topicState.familiarity || 0; // 0-100
   const gapWeight = Math.pow(100 - familiarity, 1.4) + 5; // steep preference for weak topics
   const recencyBoost = topicState.lastSeen
     ? Math.min(1 + (Date.now() - topicState.lastSeen) / (1000 * 60 * 30), 3)
     : 2.5; // never-seen topics get a boost
-  const antiRepeat = recentTopicHistory.includes(topicState.__id) ? 0.25 : 1;
+  const antiRepeat = (topicState.__id && recentTopicHistory.includes(topicState.__id)) ? 0.25 : 1;
   return gapWeight * recencyBoost * antiRepeat * (0.7 + Math.random() * 0.6);
 }
 
 function weightedPickTopic(state) {
+  if (!state.topics) state.topics = {};
   const entries = TOPICS.map(t => {
-    const ts = state.topics[t.id];
+    let ts = state.topics[t.id];
+    if (!ts) {
+      ts = { familiarity: 0, seen: 0, correct: 0, wrong: 0, lastSeen: 0, cardsShown: {} };
+      state.topics[t.id] = ts;
+    }
     ts.__id = t.id;
     return { id: t.id, weight: topicWeight(ts) };
   });
@@ -39,8 +45,13 @@ function cardsForTopic(topicId) {
 
 function pickCardForTopic(state, topicId) {
   const pool = cardsForTopic(topicId);
-  const topicState = state.topics[topicId];
-  const familiarity = topicState.familiarity;
+  if (!state.topics) state.topics = {};
+  let topicState = state.topics[topicId];
+  if (!topicState) {
+    topicState = { familiarity: 0, seen: 0, correct: 0, wrong: 0, lastSeen: 0, cardsShown: {} };
+    state.topics[topicId] = topicState;
+  }
+  const familiarity = topicState.familiarity || 0;
 
   // Decide whether we want to teach (concept) or test (question) right now.
   const forceQuestion = cardsSinceQuestion >= 3; // "questions every once in a while"
@@ -89,27 +100,39 @@ function pickNextCard(state) {
 
 // Called once a card has been "consumed" (viewed, or answered).
 function recordExposure(state, card) {
-  const ts = state.topics[card.topicId];
-  ts.seen += 1;
+  if (!state.topics) state.topics = {};
+  let ts = state.topics[card.topicId];
+  if (!ts) {
+    ts = { familiarity: 0, seen: 0, correct: 0, wrong: 0, lastSeen: 0, cardsShown: {} };
+    state.topics[card.topicId] = ts;
+  }
+  if (!ts.cardsShown) ts.cardsShown = {};
+  ts.seen = (ts.seen || 0) + 1;
   ts.lastSeen = Date.now();
   ts.cardsShown[card.id] = (ts.cardsShown[card.id] || 0) + 1;
-  if (card.type === "concept" && ts.familiarity < 8) {
-    ts.familiarity = Math.min(100, ts.familiarity + 3); // small bump just for exposure
+  if (card.type === "concept" && (ts.familiarity || 0) < 8) {
+    ts.familiarity = Math.min(100, (ts.familiarity || 0) + 3);
   }
 }
 
 // Called when a question card (mc/tf/flashcard) is answered.
 function recordAnswer(state, card, correct) {
-  const ts = state.topics[card.topicId];
+  if (!state.topics) state.topics = {};
+  let ts = state.topics[card.topicId];
+  if (!ts) {
+    ts = { familiarity: 0, seen: 0, correct: 0, wrong: 0, lastSeen: 0, cardsShown: {} };
+    state.topics[card.topicId] = ts;
+  }
+  if (!state.stats) state.stats = { totalReviewed: 0, totalCorrect: 0 };
   state.stats.totalReviewed += 1;
   if (correct) {
     state.stats.totalCorrect += 1;
-    ts.correct += 1;
-    const delta = 10 * (1 - ts.familiarity / 130); // diminishing returns near 100
-    ts.familiarity = Math.min(100, ts.familiarity + Math.max(3, delta));
+    ts.correct = (ts.correct || 0) + 1;
+    const delta = 10 * (1 - (ts.familiarity || 0) / 130);
+    ts.familiarity = Math.min(100, (ts.familiarity || 0) + Math.max(3, delta));
   } else {
-    ts.wrong += 1;
-    ts.familiarity = Math.max(0, ts.familiarity - 5);
+    ts.wrong = (ts.wrong || 0) + 1;
+    ts.familiarity = Math.max(0, (ts.familiarity || 0) - 5);
   }
   checkGoalCompletion(state, card.topicId);
 }
