@@ -6,18 +6,20 @@ export default function Home() {
       {/* ONBOARDING */}
       <section id="screen-onboarding" className="screen active">
         <div id="ob-intro-view" className="ob-intro">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-            <div className="eyebrow">SystemFeed</div>
-            <div id="ob-auth-container"></div>
+          <div>
+            <div className="ob-intro-header">
+              <div className="eyebrow">SystemFeed</div>
+              <div id="ob-auth-container"></div>
+            </div>
+            <h1>Learn system design the way you scroll everything else.</h1>
+            <p>First, rate how familiar you are with a few core concepts. Your feed will start on your weakest spots and grow from there as you improve.</p>
+            <div className="signal-legend">
+              <div className="ob-legend-row"><span className="signal-bars" data-preview="1"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Never heard of it</div>
+              <div className="ob-legend-row"><span className="signal-bars" data-preview="3"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Sounds familiar</div>
+              <div className="ob-legend-row"><span className="signal-bars" data-preview="5"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Could teach it</div>
+            </div>
           </div>
-          <h1>Learn system design the way you scroll everything else.</h1>
-          <p>First, rate how familiar you are with a few core concepts. Your feed will start on your weakest spots and grow from there as you improve.</p>
-          <div className="signal-legend">
-            <div className="ob-legend-row"><span className="signal-bars" data-preview="1"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Never heard of it</div>
-            <div className="ob-legend-row"><span className="signal-bars" data-preview="3"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Sounds familiar</div>
-            <div className="ob-legend-row"><span className="signal-bars" data-preview="5"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Could teach it</div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "30px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "24px" }}>
             <button className="btn btn-primary" id="ob-start-btn">Choose learning pathways →</button>
             <button className="btn btn-ghost" id="ob-skip-btn">Skip to Feed →</button>
           </div>

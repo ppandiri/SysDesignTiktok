@@ -45,7 +45,7 @@ async function migrate() {
         scope TEXT,
         id_token TEXT,
         session_state TEXT,
-        PRIMARY KEY (provider, "providerAccountId")
+        CONSTRAINT accounts_provider_providerAccountId_unique UNIQUE(provider, "providerAccountId")
       );
     `);
 
