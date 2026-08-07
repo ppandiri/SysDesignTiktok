@@ -26,8 +26,23 @@
         <div class="ob-legend-row"><span class="signal-bars" data-preview="3"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></span> Sounds familiar</div>
         <div class="ob-legend-row"><span class="signal-bars" data-preview="5"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></span> Could teach it</div>
       <div style="display:flex; flex-direction:column; gap:10px; margin-top:30px;">
-        <button class="btn btn-primary" id="ob-start-btn">Rate your familiarity →</button>
+        <button class="btn btn-primary" id="ob-start-btn">Choose learning pathways →</button>
         <button class="btn btn-ghost" id="ob-skip-btn">Skip to Feed →</button>
+      </div>
+    </div>
+
+    <div id="ob-pathway-view" style="display:none; flex:1; flex-direction:column; padding:24px 24px calc(24px + var(--safe-bottom)); overflow-y:auto;">
+      <div class="eyebrow">Learning Pathways</div>
+      <h2 style="font-size:22px; margin-top:6px;">Choose pathways to focus on</h2>
+      <p style="color:var(--text-dim); font-size:14px; margin:8px 0 18px;">Select the topics you want in your feed. Fundamentals is included by default.</p>
+      
+      <div id="ob-pathways-list" class="pathways-grid">
+        <!-- injected dynamically -->
+      </div>
+      
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+        <button class="btn btn-primary" id="ob-pathway-continue-btn">Rate topic familiarity →</button>
+        <button class="btn btn-ghost" id="ob-pathway-skip-btn">Skip to Feed →</button>
       </div>
     </div>
 

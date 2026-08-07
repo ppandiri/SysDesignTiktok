@@ -34,7 +34,7 @@ function loadState() {
     const parsed = JSON.parse(raw);
     // merge in any new topics not present in saved state (future-proofing)
     const fresh = defaultState();
-    parsed.topics = Object.assign(fresh.topics, parsed.topics || {});
+    parsed.topics = Object.assign({}, fresh.topics, parsed.topics || {});
     return Object.assign(fresh, parsed);
   } catch (e) {
     console.warn("Failed to load state, resetting.", e);

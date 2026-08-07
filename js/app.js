@@ -58,6 +58,8 @@ function wireNav() {
    ============================================================ */
 let obIndex = 0;
 const obRatings = {}; // topicId -> 1..5
+let selectedPathways = new Set(["Fundamentals"]);
+let surveyTopics = [];
 
 const RATING_LEVELS = [
   { level: 1, label: "Never heard of it", sub: "Totally new to me" },
@@ -76,19 +78,30 @@ function wireOnboarding() {
   const skipBtn = document.getElementById("ob-skip-btn");
   const backBtn = document.getElementById("ob-back-btn");
   const nextBtn = document.getElementById("ob-next-btn");
-
-  const startSurvey = (e) => {
-    if (e) e.preventDefault();
-    const introView = document.getElementById("ob-intro-view");
-    const surveyView = document.getElementById("ob-survey-view");
-    if (introView) introView.style.display = "none";
-    if (surveyView) surveyView.style.display = "flex";
-    obIndex = 0;
-    renderObTopic();
-  };
+  const pathwayContinueBtn = document.getElementById("ob-pathway-continue-btn");
+  const pathwaySkipBtn = document.getElementById("ob-pathway-skip-btn");
 
   if (startBtn) {
-    startBtn.addEventListener("click", startSurvey);
+    startBtn.addEventListener("click", (e) => {
+      if (e) e.preventDefault();
+      document.getElementById("ob-intro-view").style.display = "none";
+      document.getElementById("ob-pathway-view").style.display = "flex";
+      renderPathwayList();
+    });
+  }
+
+  if (pathwayContinueBtn) {
+    pathwayContinueBtn.addEventListener("click", (e) => {
+      if (e) e.preventDefault();
+      startTopicSurvey();
+    });
+  }
+
+  if (pathwaySkipBtn) {
+    pathwaySkipBtn.addEventListener("click", (e) => {
+      if (e) e.preventDefault();
+      finishOnboarding();
+    });
   }
 
   if (skipBtn) {
@@ -102,7 +115,7 @@ function wireOnboarding() {
     backBtn.addEventListener("click", () => {
       if (obIndex === 0) {
         document.getElementById("ob-survey-view").style.display = "none";
-        document.getElementById("ob-intro-view").style.display = "flex";
+        document.getElementById("ob-pathway-view").style.display = "flex";
         return;
       }
       obIndex -= 1;
@@ -112,7 +125,7 @@ function wireOnboarding() {
 
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
-      if (obIndex >= TOPICS.length - 1) {
+      if (obIndex >= surveyTopics.length - 1) {
         finishOnboarding();
         return;
       }
@@ -122,22 +135,70 @@ function wireOnboarding() {
   }
 }
 
+function renderPathwayList() {
+  const container = document.getElementById("ob-pathways-list");
+  if (!container) return;
+
+  const pathways = typeof PATHWAYS !== "undefined" ? PATHWAYS : ["Fundamentals", "AWS", "Google Cloud", "Distributed Systems", "Data & Batch Processing", "Reliability & Ops", "Containers & Orchestration"];
+
+  container.innerHTML = pathways.map(pw => {
+    const isSel = selectedPathways.has(pw);
+    const count = TOPICS.filter(t => t.category === pw).length;
+    return `
+      <div class="pathway-card ${isSel ? "selected" : ""}" data-pw="${pw}">
+        <div>
+          <div class="pw-title">${pw}</div>
+          <div class="pw-count">${count} topic${count === 1 ? "" : "s"}</div>
+        </div>
+        <div class="pw-check">✓</div>
+      </div>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".pathway-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const pw = card.dataset.pw;
+      if (selectedPathways.has(pw)) {
+        if (selectedPathways.size > 1) {
+          selectedPathways.delete(pw);
+        }
+      } else {
+        selectedPathways.add(pw);
+      }
+      renderPathwayList();
+    });
+  });
+}
+
+function startTopicSurvey() {
+  surveyTopics = TOPICS.filter(t => selectedPathways.has(t.category));
+  if (!surveyTopics.length) surveyTopics = TOPICS.filter(t => t.category === "Fundamentals");
+  
+  document.getElementById("ob-pathway-view").style.display = "none";
+  document.getElementById("ob-survey-view").style.display = "flex";
+  obIndex = 0;
+  renderObTopic();
+}
+
 function renderObTopic() {
-  const t = TOPICS[obIndex];
+  const t = surveyTopics[obIndex];
   if (!t) { finishOnboarding(); return; }
 
   const stepLabel = document.getElementById("ob-step-label");
   const progressFill = document.getElementById("ob-progress-fill");
-  if (stepLabel) stepLabel.textContent = `TOPIC ${obIndex + 1} / ${TOPICS.length}`;
-  if (progressFill) progressFill.style.width = `${((obIndex) / TOPICS.length) * 100}%`;
+  if (stepLabel) stepLabel.textContent = `TOPIC ${obIndex + 1} / ${surveyTopics.length}`;
+  if (progressFill) progressFill.style.width = `${((obIndex) / surveyTopics.length) * 100}%`;
 
   const wrap = document.getElementById("ob-topic-card");
   if (!wrap) return;
 
   const selected = obRatings[t.id];
   wrap.innerHTML = `
-    <span class="tag-chip">${t.tag}</span>
-    <h2>${t.name}</h2>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <span class="pathway-chip">${t.category || "Fundamentals"}</span>
+      <span class="tag-chip">${t.tag}</span>
+    </div>
+    <h2 style="margin-top:8px;">${t.name}</h2>
     <div class="blurb">${t.blurb}</div>
     <div class="rating-scale">
       ${RATING_LEVELS.map(r => `
@@ -158,7 +219,7 @@ function renderObTopic() {
       obRatings[t.id] = level;
       renderObTopic();
       setTimeout(() => {
-        if (obIndex < TOPICS.length - 1) {
+        if (obIndex < surveyTopics.length - 1) {
           obIndex += 1;
           renderObTopic();
         } else {
@@ -171,14 +232,17 @@ function renderObTopic() {
   const nextBtn = document.getElementById("ob-next-btn");
   if (nextBtn) {
     nextBtn.disabled = !selected && selected !== 0;
-    nextBtn.textContent = obIndex >= TOPICS.length - 1 ? "Start my feed →" : "Next";
+    nextBtn.textContent = obIndex >= surveyTopics.length - 1 ? "Start my feed →" : "Next";
   }
 }
 
 function finishOnboarding() {
   TOPICS.forEach(t => {
-    const level = obRatings[t.id] || 1;
-    state.topics[t.id].familiarity = levelToFamiliarity(level);
+    if (obRatings[t.id]) {
+      state.topics[t.id].familiarity = levelToFamiliarity(obRatings[t.id]);
+    } else {
+      state.topics[t.id].familiarity = 0;
+    }
   });
   state.onboarded = true;
   saveState(state);
@@ -266,6 +330,7 @@ function buildSlide(card) {
 function kickerHtml(topic, typeLabel) {
   return `
     <div class="card-kicker">
+      <span class="pathway-chip">${topic.category || "Fundamentals"}</span>
       <span class="tag-chip">${topic.tag}</span>
       <span class="card-type-label">${typeLabel}</span>
     </div>
@@ -406,9 +471,43 @@ function renderProgress() {
   const accuracy = state.stats.totalReviewed
     ? Math.round((state.stats.totalCorrect / state.stats.totalReviewed) * 100)
     : 0;
-  const topicsStarted = TOPICS.filter(t => state.topics[t.id].seen > 0).length;
 
-  const sortedTopics = [...TOPICS].sort((a, b) => state.topics[a.id].familiarity - state.topics[b.id].familiarity);
+  const pathwaysList = typeof PATHWAYS !== "undefined" ? PATHWAYS : ["Fundamentals", "AWS", "Google Cloud", "Distributed Systems", "Data & Batch Processing", "Reliability & Ops", "Containers & Orchestration"];
+
+  let categoriesHtml = "";
+
+  pathwaysList.forEach(pw => {
+    const categoryTopics = TOPICS.filter(t => t.category === pw);
+    if (!categoryTopics.length) return;
+
+    const avgFam = Math.round(
+      categoryTopics.reduce((acc, t) => acc + (state.topics[t.id].familiarity || 0), 0) / categoryTopics.length
+    );
+
+    const sortedCatTopics = [...categoryTopics].sort((a, b) => (state.topics[a.id].familiarity || 0) - (state.topics[b.id].familiarity || 0));
+
+    categoriesHtml += `
+      <div class="category-header">
+        <span>${pw}</span>
+        <span style="color:var(--text-faint); font-weight:normal;">${avgFam}% avg</span>
+      </div>
+      <div class="topic-list">
+        ${sortedCatTopics.map(t => {
+          const ts = state.topics[t.id];
+          const level = Math.max(1, Math.round((ts.familiarity || 0) / 20));
+          return `
+            <div class="topic-row">
+              <div>
+                <div class="topic-name"><span class="tag-chip">${t.tag}</span>${t.name}</div>
+                <div class="topic-meta">${ts.familiarity || 0}% · seen ${ts.seen || 0}× · ${ts.correct || 0}/${(ts.correct || 0) + (ts.wrong || 0)} correct</div>
+              </div>
+              ${signalBarsHtml(level, 5, (ts.familiarity || 0) < 40)}
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  });
 
   root.innerHTML = `
     <div class="progress-hero">
@@ -422,22 +521,9 @@ function renderProgress() {
       <div class="stat-box"><div class="stat-num">${state.streak.count || 0}</div><div class="stat-label">Day streak</div></div>
     </div>
 
-    <div class="section-title">Weakest → strongest</div>
-    <div id="topic-list">
-      ${sortedTopics.map(t => {
-        const ts = state.topics[t.id];
-        const level = Math.max(1, Math.round(ts.familiarity / 20));
-        return `
-          <div class="topic-row">
-            <div>
-              <div class="topic-name"><span class="tag-chip">${t.tag}</span>${t.name}</div>
-              <div class="topic-meta">${ts.familiarity}% · seen ${ts.seen}× · ${ts.correct}/${ts.correct + ts.wrong || 0} correct</div>
-            </div>
-            ${signalBarsHtml(level, 5, ts.familiarity < 40)}
-          </div>
-        `;
-      }).join("")}
-    </div>
+    <div class="section-title">Topic Mastery by Pathway</div>
+    ${categoriesHtml}
+  `;
 
     <div class="section-title">Learning goals</div>
     <div id="goal-list">
