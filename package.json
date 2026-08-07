@@ -1,0 +1,28 @@
+{
+  "name": "sysdesign-tok",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:migrate": "node scripts/migrate.js"
+  },
+  "dependencies": {
+    "@auth/pg-adapter": "^1.11.3",
+    "next": "^14.2.5",
+    "next-auth": "5.0.0-beta.25",
+    "pg": "^8.12.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "@types/pg": "^8.11.6",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.5.4"
+  }
+}

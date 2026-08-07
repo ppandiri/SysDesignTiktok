@@ -407,6 +407,55 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01e
 .feed-continue { margin-top: 16px; display: none; }
 .feed-continue.show { display: block; }
 
+/* Auth UI */
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 16px;
+  background: rgba(82, 227, 194, 0.08);
+  border: 1px solid rgba(82, 227, 194, 0.3);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.auth-btn:hover {
+  background: rgba(82, 227, 194, 0.18);
+  border-color: var(--accent);
+}
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--surface);
+  padding: 3px 8px 3px 4px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.user-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.auth-out-link {
+  color: var(--text-faint);
+  font-size: 10px;
+  text-decoration: none;
+  margin-left: 4px;
+  cursor: pointer;
+}
+.auth-out-link:hover {
+  color: var(--error);
+}
+
 /* ============================================================
    BOTTOM NAV
    ============================================================ */
