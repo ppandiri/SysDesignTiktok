@@ -5,27 +5,41 @@
 let state = loadState();
 let instanceCounter = 0;
 
-document.addEventListener("DOMContentLoaded", init);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
 
 function init() {
-  state = touchStreak(state);
-  saveState(state);
+  try {
+    state = touchStreak(state);
+    saveState(state);
 
-  if (state.onboarded) {
+    if (state.onboarded) {
+      showScreen("feed");
+      seedFeed();
+    } else {
+      showScreen("onboarding");
+    }
+
+    wireNav();
+    wireOnboarding();
+    wireGoalModal();
+  } catch (err) {
+    console.error("Init error, resetting state to default:", err);
+    state = resetState();
+    state.onboarded = true;
+    saveState(state);
     showScreen("feed");
     seedFeed();
-  } else {
-    showScreen("onboarding");
   }
-
-  wireNav();
-  wireOnboarding();
-  wireGoalModal();
 }
 
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(`screen-${name}`).classList.add("active");
+  const target = document.getElementById(`screen-${name}`);
+  if (target) target.classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.nav === name);
   });
@@ -54,43 +68,72 @@ const RATING_LEVELS = [
 ];
 
 function levelToFamiliarity(level) {
-  return [null, 5, 25, 48, 72, 92][level];
+  return [null, 5, 25, 48, 72, 92][level] || 25;
 }
 
 function wireOnboarding() {
-  document.getElementById("ob-start-btn").addEventListener("click", () => {
-    document.getElementById("ob-intro-view").style.display = "none";
-    document.getElementById("ob-survey-view").style.display = "flex";
+  const startBtn = document.getElementById("ob-start-btn");
+  const skipBtn = document.getElementById("ob-skip-btn");
+  const backBtn = document.getElementById("ob-back-btn");
+  const nextBtn = document.getElementById("ob-next-btn");
+
+  const startSurvey = (e) => {
+    if (e) e.preventDefault();
+    const introView = document.getElementById("ob-intro-view");
+    const surveyView = document.getElementById("ob-survey-view");
+    if (introView) introView.style.display = "none";
+    if (surveyView) surveyView.style.display = "flex";
     obIndex = 0;
     renderObTopic();
-  });
+  };
 
-  document.getElementById("ob-back-btn").addEventListener("click", () => {
-    if (obIndex === 0) {
-      document.getElementById("ob-survey-view").style.display = "none";
-      document.getElementById("ob-intro-view").style.display = "flex";
-      return;
-    }
-    obIndex -= 1;
-    renderObTopic();
-  });
+  if (startBtn) {
+    startBtn.addEventListener("click", startSurvey);
+  }
 
-  document.getElementById("ob-next-btn").addEventListener("click", () => {
-    if (obIndex >= TOPICS.length - 1) {
+  if (skipBtn) {
+    skipBtn.addEventListener("click", (e) => {
+      if (e) e.preventDefault();
       finishOnboarding();
-      return;
-    }
-    obIndex += 1;
-    renderObTopic();
-  });
+    });
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (obIndex === 0) {
+        document.getElementById("ob-survey-view").style.display = "none";
+        document.getElementById("ob-intro-view").style.display = "flex";
+        return;
+      }
+      obIndex -= 1;
+      renderObTopic();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (obIndex >= TOPICS.length - 1) {
+        finishOnboarding();
+        return;
+      }
+      obIndex += 1;
+      renderObTopic();
+    });
+  }
 }
 
 function renderObTopic() {
   const t = TOPICS[obIndex];
-  document.getElementById("ob-step-label").textContent = `TOPIC ${obIndex + 1} / ${TOPICS.length}`;
-  document.getElementById("ob-progress-fill").style.width = `${((obIndex) / TOPICS.length) * 100}%`;
+  if (!t) { finishOnboarding(); return; }
+
+  const stepLabel = document.getElementById("ob-step-label");
+  const progressFill = document.getElementById("ob-progress-fill");
+  if (stepLabel) stepLabel.textContent = `TOPIC ${obIndex + 1} / ${TOPICS.length}`;
+  if (progressFill) progressFill.style.width = `${((obIndex) / TOPICS.length) * 100}%`;
 
   const wrap = document.getElementById("ob-topic-card");
+  if (!wrap) return;
+
   const selected = obRatings[t.id];
   wrap.innerHTML = `
     <span class="tag-chip">${t.tag}</span>
@@ -114,12 +157,22 @@ function renderObTopic() {
       const level = parseInt(el.dataset.level, 10);
       obRatings[t.id] = level;
       renderObTopic();
+      setTimeout(() => {
+        if (obIndex < TOPICS.length - 1) {
+          obIndex += 1;
+          renderObTopic();
+        } else {
+          finishOnboarding();
+        }
+      }, 160);
     });
   });
 
   const nextBtn = document.getElementById("ob-next-btn");
-  nextBtn.disabled = !selected && selected !== 0;
-  nextBtn.textContent = obIndex >= TOPICS.length - 1 ? "Start my feed →" : "Next";
+  if (nextBtn) {
+    nextBtn.disabled = !selected && selected !== 0;
+    nextBtn.textContent = obIndex >= TOPICS.length - 1 ? "Start my feed →" : "Next";
+  }
 }
 
 function finishOnboarding() {
@@ -217,6 +270,8 @@ function kickerHtml(topic, typeLabel) {
       <span class="card-type-label">${typeLabel}</span>
     </div>
   `;
+}
+
 function diagramHtml(card) {
   if (card.diagram && typeof DIAGRAMS !== "undefined" && DIAGRAMS[card.diagram]) {
     return `<div class="card-diagram">${DIAGRAMS[card.diagram]}</div>`;
