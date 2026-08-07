@@ -75,12 +75,12 @@ async function loadState() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.state) {
-          // Returning user: they have saved state in the DB
-          isReturningUser = true;
-          const serverState = normalizeState(data.state);
-          // Always mark as onboarded so they skip straight to feed
-          serverState.onboarded = true;
-          return serverState;
+          // Returning user: they have saved state in the DB.
+          // Trust the state's own onboarded flag:
+          // - onboarded: true  → skip to feed
+          // - onboarded: false → they signed in but never finished onboarding, show it again
+          isReturningUser = data.state.onboarded === true;
+          return normalizeState(data.state);
         } else {
           // Brand-new signed-in user: no DB state yet
           isReturningUser = false;
@@ -88,8 +88,7 @@ async function loadState() {
           const localState = getLocalState();
           if (localState && (localState.onboarded || localState.stats.totalReviewed > 0)) {
             // Migrate guest progress to their account — they're a returning guest
-            isReturningUser = true;
-            localState.onboarded = true;
+            isReturningUser = localState.onboarded === true;
             await saveState(localState);
             return localState;
           }
