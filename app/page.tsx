@@ -6,11 +6,12 @@ export default function Home() {
       {/* ONBOARDING */}
       <section id="screen-onboarding" className="screen active">
         <div id="ob-intro-view" className="ob-intro">
-          <div>
-            <div className="ob-intro-header">
-              <div className="eyebrow">SystemFeed</div>
-              <div id="ob-auth-container"></div>
-            </div>
+          <div className="ob-intro-header">
+            <div className="eyebrow">SystemFeed</div>
+            <div id="ob-auth-container"></div>
+          </div>
+
+          <div className="ob-intro-content">
             <h1>Learn system design the way you scroll everything else.</h1>
             <p>First, rate how familiar you are with a few core concepts. Your feed will start on your weakest spots and grow from there as you improve.</p>
             <div className="signal-legend">
@@ -19,20 +20,19 @@ export default function Home() {
               <div className="ob-legend-row"><span className="signal-bars" data-preview="5"><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span><span className="bar"></span></span> Could teach it</div>
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "24px" }}>
+
+          <div className="ob-intro-actions">
             <button className="btn btn-primary" id="ob-start-btn">Choose learning pathways →</button>
             <button className="btn btn-ghost" id="ob-skip-btn">Skip to Feed →</button>
           </div>
         </div>
 
-        <div id="ob-pathway-view" style={{ display: "none", flex: 1, flexDirection: "column", padding: "24px 24px calc(24px + var(--safe-bottom))", overflowY: "auto" }}>
-          <div className="eyebrow">Learning Pathways</div>
+        <div id="ob-pathway-view" style={{ display: "none", flex: 1, flexDirection: "column", padding: "calc(20px + var(--safe-top)) 24px calc(24px + var(--safe-bottom))", overflowY: "auto" }}>
+          <div className="eyebrow" style={{ color: "var(--accent)", fontFamily: "var(--font-mono)", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase" }}>Learning Pathways</div>
           <h2 style={{ fontSize: "22px", marginTop: "6px" }}>Choose pathways to focus on</h2>
           <p style={{ color: "var(--text-dim)", fontSize: "14px", margin: "8px 0 18px" }}>Select the topics you want in your feed. Fundamentals is included by default.</p>
           
-          <div id="ob-pathways-list" className="pathways-grid">
-            {/* injected dynamically */}
-          </div>
+          <div id="ob-pathways-list" className="pathways-grid"></div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
             <button className="btn btn-primary" id="ob-pathway-continue-btn">Rate topic familiarity →</button>
@@ -46,9 +46,7 @@ export default function Home() {
             <div className="ob-progress-track"><div className="ob-progress-fill" id="ob-progress-fill" style={{ width: "0%" }}></div></div>
           </div>
           <div className="ob-card-wrap">
-            <div className="ob-topic-card" id="ob-topic-card">
-              {/* injected */}
-            </div>
+            <div className="ob-topic-card" id="ob-topic-card"></div>
             <div className="ob-nav-row">
               <button className="btn btn-ghost" id="ob-back-btn">Back</button>
               <button className="btn btn-primary" id="ob-next-btn" disabled>Next</button>
@@ -75,9 +73,7 @@ export default function Home() {
 
       {/* PROGRESS */}
       <section id="screen-progress" className="screen">
-        <div className="progress-scroll" id="progress-scroll">
-          {/* injected */}
-        </div>
+        <div className="progress-scroll" id="progress-scroll"></div>
         <nav className="bottom-nav">
           <button className="nav-btn" data-nav="feed"><span className="nav-dot"></span>Feed</button>
           <button className="nav-btn active" data-nav="progress"><span className="nav-dot"></span>Progress</button>
