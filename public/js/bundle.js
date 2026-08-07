@@ -1939,12 +1939,13 @@ if (document.readyState === "loading") {
 }
 
 async function init() {
+  renderAuthUI(); // Render sign-in UI immediately on load
   try {
     state = await loadState();
     state = touchStreak(state);
     await saveState(state);
 
-    renderAuthUI();
+    renderAuthUI(); // Re-render once auth check finishes
 
     if (state.onboarded) {
       showScreen("feed");
