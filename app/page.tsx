@@ -6,7 +6,10 @@ export default function Home() {
       {/* ONBOARDING */}
       <section id="screen-onboarding" className="screen active">
         <div id="ob-intro-view" className="ob-intro">
-          <div className="eyebrow">SystemFeed</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <div className="eyebrow">SystemFeed</div>
+            <div id="ob-auth-container"></div>
+          </div>
           <h1>Learn system design the way you scroll everything else.</h1>
           <p>First, rate how familiar you are with a few core concepts. Your feed will start on your weakest spots and grow from there as you improve.</p>
           <div className="signal-legend">
