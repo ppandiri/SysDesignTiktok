@@ -12,13 +12,17 @@ if (document.readyState === "loading") {
 }
 
 async function init() {
-  renderAuthUI(); // Render sign-in UI immediately on load
+  renderAuthUI();
+  wireNav();
+  wireOnboarding();
+  wireGoalModal();
+
   try {
     state = await loadState();
     state = touchStreak(state);
     await saveState(state);
 
-    renderAuthUI(); // Re-render once auth check finishes
+    renderAuthUI();
 
     if (state.onboarded) {
       showScreen("feed");
@@ -26,10 +30,6 @@ async function init() {
     } else {
       showScreen("onboarding");
     }
-
-    wireNav();
-    wireOnboarding();
-    wireGoalModal();
   } catch (err) {
     console.error("Init error, resetting state to default:", err);
     state = resetState();
@@ -566,7 +566,6 @@ function renderProgress() {
 
     <div class="section-title">Topic Mastery by Pathway</div>
     ${categoriesHtml}
-  `;
 
     <div class="section-title">Learning goals</div>
     <div id="goal-list">
@@ -578,8 +577,8 @@ function renderProgress() {
             return `
               <div class="goal-card ${g.done ? "done" : ""}">
                 <div class="goal-info">
-                  <div class="goal-topic">${g.done ? "✓ " : ""}${t.name}</div>
-                  <div class="goal-target">${ts.familiarity}% / ${g.targetLevel}% target</div>
+                  <div class="goal-topic">${g.done ? "✓ " : ""}${t ? t.name : g.topicId}</div>
+                  <div class="goal-target">${ts ? ts.familiarity : 0}% / ${g.targetLevel}% target</div>
                 </div>
                 <button class="goal-remove" data-goal="${g.id}">✕</button>
               </div>
