@@ -63,6 +63,7 @@ const CARDS = [
       "A lookup walks a chain: resolver checks cache, asks root, TLD, then authoritative server, caching at each hop."
     ]},
   { type: "flashcard", topicId: "dns",
+    diagram: "dns-resolution-chain",
     front: "Why does DNS rely so heavily on caching at every layer?",
     back: "Domain-to-IP mappings rarely change, so caching avoids repeating the same multi-hop lookup for every request, which would add latency and load to the root and TLD servers." },
   { type: "mc", topicId: "dns",
@@ -88,6 +89,7 @@ const CARDS = [
       "It provides a single stable entry point and detects/routes around unresponsive servers via health checks."
     ]},
   { type: "flashcard", topicId: "load-balancing",
+    diagram: "load-balancer-topology",
     front: "Round robin vs. least connections — what's the difference in strategy?",
     back: "Round robin cycles through servers in fixed order regardless of load. Least connections sends the next request to whichever server currently has the fewest active connections, adapting to uneven request costs." },
   { type: "mc", topicId: "load-balancing",
@@ -118,6 +120,7 @@ const CARDS = [
       "In cache-aside, the app checks cache first; on a miss, it reads from the database and updates the cache."
     ]},
   { type: "flashcard", topicId: "caching",
+    diagram: "cache-aside-flow",
     front: "What's a 'cache-aside' (lazy loading) pattern?",
     back: "The app checks the cache first; on a miss, it reads from the database, returns the result, and writes it into the cache for next time. Simple, and only caches data that's actually requested." },
   { type: "flashcard", topicId: "caching",
@@ -141,6 +144,7 @@ const CARDS = [
       "This cuts physical latency, relieves origin server load, and routes around regional outages."
     ]},
   { type: "flashcard", topicId: "cdn",
+    diagram: "cdn-edge-network",
     front: "What kind of content is a CDN best suited for, and why?",
     back: "Static or rarely-changing content — images, videos, JS/CSS bundles — because it can be cached at the edge for a long time without going stale, unlike highly personalized or constantly changing data." },
   { type: "mc", topicId: "cdn",
@@ -209,6 +213,7 @@ const CARDS = [
       "This increases read capacity and reliability, though you must account for replication lag."
     ]},
   { type: "flashcard", topicId: "replication",
+    diagram: "primary-replica-replication",
     front: "What is 'replication lag'?",
     back: "The delay between a write landing on the primary and that same write appearing on a replica. During this window, a read from the replica can return stale data." },
   { type: "mc", topicId: "replication",
@@ -234,6 +239,7 @@ const CARDS = [
       "Choosing a good shard key avoids hot shards that get disproportionate traffic."
     ]},
   { type: "flashcard", topicId: "sharding",
+    diagram: "db-sharding-split",
     front: "What is a 'hot shard' and why is it a problem?",
     back: "A shard that receives disproportionately more traffic or data than the others, usually from a poor shard key choice, which defeats the purpose of spreading load evenly." },
   { type: "mc", topicId: "sharding",
@@ -259,6 +265,7 @@ const CARDS = [
       "Because network partitions are inevitable in distributed systems, real systems trade off CP vs AP."
     ]},
   { type: "flashcard", topicId: "cap-theorem",
+    diagram: "cap-theorem-triangle",
     front: "During a network partition, what does an AP system prioritize?",
     back: "Availability — it keeps responding to requests on both sides of the partition, potentially returning stale or conflicting data that gets reconciled later." },
   { type: "mc", topicId: "cap-theorem",
@@ -284,6 +291,7 @@ const CARDS = [
       "Each key belongs to the next clockwise node, so adding or removing nodes only affects neighboring keys."
     ]},
   { type: "flashcard", topicId: "consistent-hashing",
+    diagram: "consistent-hashing-ring",
     front: "What problem do 'virtual nodes' solve in consistent hashing?",
     back: "With few real nodes on the ring, load can be distributed unevenly. Virtual nodes give each physical server multiple positions on the ring, smoothing out the distribution of keys across servers." },
   { type: "mc", topicId: "consistent-hashing",
@@ -309,6 +317,7 @@ const CARDS = [
       "This buffers traffic bursts so workers can process jobs asynchronously at their own rate."
     ]},
   { type: "flashcard", topicId: "message-queues",
+    diagram: "message-queue-decoupling",
     front: "What's the practical difference between 'at-least-once' and 'exactly-once' delivery?",
     back: "At-least-once may redeliver a message after a failure, so consumers must handle duplicates (idempotency). Exactly-once guarantees no duplicates but is harder and costlier to implement correctly." },
   { type: "mc", topicId: "message-queues",
@@ -382,7 +391,8 @@ const CARDS = [
       "It centralizes cross-cutting concerns like authentication, rate limiting, and request transformation."
     ]},
   { type: "flashcard", topicId: "api-gateway",
-    front: "Name two cross-cutting concerns an API gateway commonly centralizes.",
+    diagram: "api-gateway-fanout",
+    front: "Name two cross-cutting concerns an API gateway commonly centralizes?",
     back: "Authentication/authorization and rate limiting are classic examples — also logging, request routing, and response transformation." },
   { type: "mc", topicId: "api-gateway",
     question: "Without an API gateway, a mobile client calling five microservices directly would most likely have to:",
