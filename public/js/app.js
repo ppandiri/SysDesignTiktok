@@ -14,30 +14,38 @@ if (document.readyState === "loading") {
 async function init() {
   renderAuthUI();
   wireNav();
-  wireOnboarding();
   wireGoalModal();
 
   try {
-    state = await loadState();
-    state = touchStreak(state);
-    await saveState(state);
-
+    await checkAuth(); // Ensure currentUser is set before routing
     renderAuthUI();
 
-    if (state.onboarded) {
-      showScreen("feed");
-      seedFeed();
+    if (currentUser) {
+      // Signed-in user: load state from DB, show onboarding or feed
+      wireOnboarding();
+      state = await loadState();
+      state = touchStreak(state);
+      await saveState(state);
+      renderAuthUI();
+
+      if (state.onboarded) {
+        showScreen("feed");
+        seedFeed();
+      } else {
+        showScreen("onboarding");
+      }
     } else {
-      showScreen("onboarding");
+      // Guest: skip straight to feed, use ephemeral in-memory state only
+      state = defaultState();
+      state.onboarded = true;
+      showScreen("landing"); // show landing/intro screen for guests
     }
   } catch (err) {
-    console.error("Init error, resetting state to default:", err);
-    state = resetState();
+    console.error("Init error:", err);
+    state = defaultState();
     state.onboarded = true;
-    await saveState(state);
     renderAuthUI();
-    showScreen("feed");
-    seedFeed();
+    showScreen("landing");
   }
 }
 
@@ -130,6 +138,21 @@ function wireNav() {
   document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.addEventListener("click", () => showScreen(btn.dataset.nav));
   });
+
+  // Landing screen: sign-in button
+  const landingSigninBtn = document.getElementById("landing-signin-btn");
+  if (landingSigninBtn) {
+    landingSigninBtn.addEventListener("click", () => signInWithGoogle());
+  }
+
+  // Landing screen: guest button
+  const guestBtn = document.getElementById("landing-guest-btn");
+  if (guestBtn) {
+    guestBtn.addEventListener("click", () => {
+      seedFeed();
+      showScreen("feed");
+    });
+  }
 }
 
 /* ============================================================
@@ -154,11 +177,9 @@ function levelToFamiliarity(level) {
 
 function wireOnboarding() {
   const startBtn = document.getElementById("ob-start-btn");
-  const skipBtn = document.getElementById("ob-skip-btn");
   const backBtn = document.getElementById("ob-back-btn");
   const nextBtn = document.getElementById("ob-next-btn");
   const pathwayContinueBtn = document.getElementById("ob-pathway-continue-btn");
-  const pathwaySkipBtn = document.getElementById("ob-pathway-skip-btn");
 
   if (startBtn) {
     startBtn.addEventListener("click", (e) => {
@@ -173,20 +194,6 @@ function wireOnboarding() {
     pathwayContinueBtn.addEventListener("click", (e) => {
       if (e) e.preventDefault();
       startTopicSurvey();
-    });
-  }
-
-  if (pathwaySkipBtn) {
-    pathwaySkipBtn.addEventListener("click", (e) => {
-      if (e) e.preventDefault();
-      finishOnboarding();
-    });
-  }
-
-  if (skipBtn) {
-    skipBtn.addEventListener("click", (e) => {
-      if (e) e.preventDefault();
-      finishOnboarding();
     });
   }
 
