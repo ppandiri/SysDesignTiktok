@@ -6,6 +6,8 @@ const STORAGE_KEY = "sdtok_state_v1";
 
 let currentUser = null;
 let authChecked = false;
+// Flag set by loadState: true if the user has existing saved progress (returning user)
+let isReturningUser = false;
 
 async function checkAuth() {
   if (authChecked) return currentUser;
@@ -73,15 +75,25 @@ async function loadState() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.state) {
-          return normalizeState(data.state);
+          // Returning user: they have saved state in the DB
+          isReturningUser = true;
+          const serverState = normalizeState(data.state);
+          // Always mark as onboarded so they skip straight to feed
+          serverState.onboarded = true;
+          return serverState;
         } else {
-          // Brand-new logged in user: check if they have existing guest progress to migrate
+          // Brand-new signed-in user: no DB state yet
+          isReturningUser = false;
+          // Check if they have existing guest progress to migrate
           const localState = getLocalState();
           if (localState && (localState.onboarded || localState.stats.totalReviewed > 0)) {
-            // Upload guest progress to server once
+            // Migrate guest progress to their account — they're a returning guest
+            isReturningUser = true;
+            localState.onboarded = true;
             await saveState(localState);
             return localState;
           }
+          // Truly new user — start onboarding
           const fresh = defaultState();
           await saveState(fresh);
           return fresh;
@@ -93,6 +105,7 @@ async function loadState() {
   }
 
   // Guest / Anonymous fallback
+  isReturningUser = false;
   const local = getLocalState();
   return local || defaultState();
 }
@@ -122,6 +135,7 @@ async function saveState(state) {
 
 function resetState() {
   localStorage.removeItem(STORAGE_KEY);
+  isReturningUser = false;
   return defaultState();
 }
 
