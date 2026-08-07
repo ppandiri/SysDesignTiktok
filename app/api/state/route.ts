@@ -6,16 +6,27 @@ export const dynamic = "force-dynamic";
 
 const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
-});
+let pool: Pool | null = null;
+if (connectionString && !connectionString.includes("[SENSITIVE]")) {
+  try {
+    pool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+    });
+  } catch (e) {
+    console.warn("Failed to initialize Pool in /api/state:", e);
+  }
+}
 
 export async function GET() {
   try {
     const session = await auth();
     if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!pool) {
+      return NextResponse.json({ state: null });
     }
 
     const userId = session.user.id;
@@ -46,6 +57,10 @@ export async function PUT(req: Request) {
     const session = await auth();
     if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!pool) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
     const userId = session.user.id;

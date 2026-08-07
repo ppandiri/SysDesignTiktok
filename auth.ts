@@ -5,20 +5,28 @@ import { Pool } from "pg";
 
 const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
-});
+let adapter = undefined;
+if (connectionString && !connectionString.includes("[SENSITIVE]")) {
+  try {
+    const pool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+    });
+    adapter = PostgresAdapter(pool);
+  } catch (e) {
+    console.warn("Failed to initialize PostgresAdapter:", e);
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PostgresAdapter(pool),
+  adapter,
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || "placeholder",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "placeholder",
     }),
   ],
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || "fallback_auth_secret_key_minimum_32_characters_long",
   trustHost: true,
   callbacks: {
     session({ session, user }) {
