@@ -24,11 +24,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <script src="/js/data.js" />
-        <script src="/js/storage.js" />
-        <script src="/js/algorithm.js" />
-        <script src="/js/diagrams.js" />
-        <script src="/js/app.js" />
+        <script src="/js/bundle.js" defer />
       </body>
     </html>
   );
