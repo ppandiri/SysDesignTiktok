@@ -156,34 +156,24 @@ function wireNav() {
 }
 
 /* ============================================================
-   ONBOARDING
+   ONBOARDING — Quiz-based familiarity scoring
    ============================================================ */
-let obIndex = 0;
-const obRatings = {}; // topicId -> 1..5
 let selectedPathways = new Set(["Fundamentals"]);
-let surveyTopics = [];
 
-const RATING_LEVELS = [
-  { level: 1, label: "Never heard of it", sub: "Totally new to me" },
-  { level: 2, label: "Rings a bell", sub: "Heard the term, not much more" },
-  { level: 3, label: "Sounds familiar", sub: "I get the basic idea" },
-  { level: 4, label: "Comfortable", sub: "I could explain it reasonably well" },
-  { level: 5, label: "Could teach it", sub: "I know this cold" },
-];
-
-function levelToFamiliarity(level) {
-  return [null, 5, 25, 48, 72, 92][level] || 25;
-}
+// Quiz state
+let quizQuestions = [];
+let quizIndex = 0;
+let quizAnswers = {}; // questionId → selectedOptionIndex
 
 function wireOnboarding() {
   const startBtn = document.getElementById("ob-start-btn");
-  const backBtn = document.getElementById("ob-back-btn");
-  const nextBtn = document.getElementById("ob-next-btn");
   const pathwayContinueBtn = document.getElementById("ob-pathway-continue-btn");
+  const quizBackBtn = document.getElementById("quiz-back-btn");
+  const quizNextBtn = document.getElementById("quiz-next-btn");
+  const quizFinishBtn = document.getElementById("quiz-finish-btn");
 
   if (startBtn) {
-    startBtn.addEventListener("click", (e) => {
-      if (e) e.preventDefault();
+    startBtn.addEventListener("click", () => {
       document.getElementById("ob-intro-view").style.display = "none";
       document.getElementById("ob-pathway-view").style.display = "flex";
       renderPathwayList();
@@ -191,33 +181,34 @@ function wireOnboarding() {
   }
 
   if (pathwayContinueBtn) {
-    pathwayContinueBtn.addEventListener("click", (e) => {
-      if (e) e.preventDefault();
-      startTopicSurvey();
-    });
+    pathwayContinueBtn.addEventListener("click", () => startQuiz());
   }
 
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      if (obIndex === 0) {
-        document.getElementById("ob-survey-view").style.display = "none";
+  if (quizBackBtn) {
+    quizBackBtn.addEventListener("click", () => {
+      if (quizIndex === 0) {
+        document.getElementById("ob-quiz-view").style.display = "none";
         document.getElementById("ob-pathway-view").style.display = "flex";
         return;
       }
-      obIndex -= 1;
-      renderObTopic();
+      quizIndex -= 1;
+      renderQuizQuestion();
     });
   }
 
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      if (obIndex >= surveyTopics.length - 1) {
-        finishOnboarding();
+  if (quizNextBtn) {
+    quizNextBtn.addEventListener("click", () => {
+      if (quizIndex >= quizQuestions.length - 1) {
+        showQuizResults();
         return;
       }
-      obIndex += 1;
-      renderObTopic();
+      quizIndex += 1;
+      renderQuizQuestion();
     });
+  }
+
+  if (quizFinishBtn) {
+    quizFinishBtn.addEventListener("click", () => finishOnboarding());
   }
 }
 
@@ -245,9 +236,7 @@ function renderPathwayList() {
     card.addEventListener("click", () => {
       const pw = card.dataset.pw;
       if (selectedPathways.has(pw)) {
-        if (selectedPathways.size > 1) {
-          selectedPathways.delete(pw);
-        }
+        if (selectedPathways.size > 1) selectedPathways.delete(pw);
       } else {
         selectedPathways.add(pw);
       }
@@ -256,90 +245,155 @@ function renderPathwayList() {
   });
 }
 
-function startTopicSurvey() {
-  surveyTopics = TOPICS.filter(t => selectedPathways.has(t.category));
-  if (!surveyTopics.length) surveyTopics = TOPICS.filter(t => t.category === "Fundamentals");
-  
+function startQuiz() {
+  quizQuestions = selectQuizQuestions([...selectedPathways]);
+  quizIndex = 0;
+  quizAnswers = {};
+
   document.getElementById("ob-pathway-view").style.display = "none";
-  document.getElementById("ob-survey-view").style.display = "flex";
-  obIndex = 0;
-  renderObTopic();
+  document.getElementById("ob-quiz-view").style.display = "flex";
+  renderQuizQuestion();
 }
 
-function renderObTopic() {
-  const t = surveyTopics[obIndex];
-  if (!t) { finishOnboarding(); return; }
+function renderQuizQuestion() {
+  const q = quizQuestions[quizIndex];
+  if (!q) { showQuizResults(); return; }
 
-  const stepLabel = document.getElementById("ob-step-label");
-  const progressFill = document.getElementById("ob-progress-fill");
-  if (stepLabel) stepLabel.textContent = `TOPIC ${obIndex + 1} / ${surveyTopics.length}`;
-  if (progressFill) progressFill.style.width = `${((obIndex) / surveyTopics.length) * 100}%`;
+  const total = quizQuestions.length;
+  const pct = (quizIndex / total) * 100;
 
-  const wrap = document.getElementById("ob-topic-card");
-  if (!wrap) return;
+  const stepLabel = document.getElementById("quiz-step-label");
+  const progressFill = document.getElementById("quiz-progress-fill");
+  const categoryBadge = document.getElementById("quiz-category-badge");
+  if (stepLabel) stepLabel.textContent = `Q ${quizIndex + 1} / ${total}`;
+  if (progressFill) progressFill.style.width = `${pct}%`;
+  if (categoryBadge) categoryBadge.textContent = q.categories.join(" · ");
 
-  const selected = obRatings[t.id];
-  wrap.innerHTML = `
-    <div style="display:flex; align-items:center; gap:6px;">
-      <span class="pathway-chip">${t.category || "Fundamentals"}</span>
-      <span class="tag-chip">${t.tag}</span>
-    </div>
-    <h2 style="margin-top:8px;">${t.name}</h2>
-    <div class="blurb">${t.blurb}</div>
-    <div class="rating-scale">
-      ${RATING_LEVELS.map(r => `
-        <div class="rating-option ${selected === r.level ? "selected" : ""}" data-level="${r.level}">
-          <div>
-            <div class="rating-label">${r.label}</div>
-            <div class="rating-sub">${r.sub}</div>
-          </div>
-          ${signalBarsHtml(r.level, 5, false)}
-        </div>
-      `).join("")}
-    </div>
-  `;
+  const questionEl = document.getElementById("quiz-question-text");
+  if (questionEl) questionEl.textContent = q.q;
 
-  wrap.querySelectorAll(".rating-option").forEach(el => {
-    el.addEventListener("click", () => {
-      const level = parseInt(el.dataset.level, 10);
-      obRatings[t.id] = level;
-      renderObTopic();
-      setTimeout(() => {
-        if (obIndex < surveyTopics.length - 1) {
-          obIndex += 1;
-          renderObTopic();
-        } else {
-          finishOnboarding();
-        }
-      }, 160);
-    });
+  const answered = quizAnswers[q.id] !== undefined;
+  const userAnswer = quizAnswers[q.id];
+
+  const optionsEl = document.getElementById("quiz-options");
+  if (optionsEl) {
+    optionsEl.innerHTML = q.options.map((opt, i) => {
+      let cls = "quiz-option";
+      if (answered) {
+        if (i === q.correct) cls += " correct";
+        else if (i === userAnswer) cls += " wrong";
+        else cls += " dimmed";
+      } else if (i === userAnswer) {
+        cls += " selected";
+      }
+      return `<button class="${cls}" data-idx="${i}">${opt}</button>`;
+    }).join("");
+
+    if (!answered) {
+      optionsEl.querySelectorAll(".quiz-option").forEach(btn => {
+        btn.addEventListener("click", () => selectAnswer(parseInt(btn.dataset.idx, 10)));
+      });
+    }
+  }
+
+  const feedbackEl = document.getElementById("quiz-feedback");
+  if (feedbackEl) {
+    if (answered) {
+      const correct = userAnswer === q.correct;
+      feedbackEl.innerHTML = `
+        <div class="quiz-feedback-inner ${correct ? "correct" : "wrong"}">
+          <span class="feedback-icon">${correct ? "✓" : "✗"}</span>
+          <span>${q.explain}</span>
+        </div>`;
+      feedbackEl.style.display = "block";
+    } else {
+      feedbackEl.style.display = "none";
+      feedbackEl.innerHTML = "";
+    }
+  }
+
+  const nextBtn = document.getElementById("quiz-next-btn");
+  if (nextBtn) {
+    nextBtn.disabled = !answered;
+    nextBtn.textContent = quizIndex >= total - 1 ? "See results →" : "Next →";
+  }
+  const backBtn = document.getElementById("quiz-back-btn");
+  if (backBtn) backBtn.style.visibility = quizIndex === 0 ? "hidden" : "visible";
+}
+
+function selectAnswer(idx) {
+  const q = quizQuestions[quizIndex];
+  if (!q || quizAnswers[q.id] !== undefined) return; // already answered
+  quizAnswers[q.id] = idx;
+  renderQuizQuestion();
+}
+
+function showQuizResults() {
+  const familiarity = scoreQuiz(quizQuestions, quizAnswers);
+  const total = quizQuestions.length;
+  const numCorrect = quizQuestions.filter(q => quizAnswers[q.id] === q.correct).length;
+  const pct = Math.round((numCorrect / total) * 100);
+
+  // Apply familiarity scores to state
+  TOPICS.forEach(t => {
+    state.topics[t.id].familiarity = familiarity[t.id] !== undefined
+      ? familiarity[t.id]
+      : QUIZ_DEFAULT_FAMILIARITY;
   });
 
-  const nextBtn = document.getElementById("ob-next-btn");
-  if (nextBtn) {
-    nextBtn.disabled = !selected && selected !== 0;
-    nextBtn.textContent = obIndex >= surveyTopics.length - 1 ? "Start my feed →" : "Next";
+  // Show results screen
+  document.getElementById("ob-quiz-view").style.display = "none";
+  document.getElementById("ob-quiz-results-view").style.display = "flex";
+
+  const scoreDisplay = document.getElementById("quiz-score-display");
+  if (scoreDisplay) {
+    scoreDisplay.innerHTML = `
+      <div class="quiz-score-ring">
+        <div class="quiz-score-number">${numCorrect}<span>/${total}</span></div>
+        <div class="quiz-score-label">${pct >= 70 ? "Strong foundation 🚀" : pct >= 40 ? "Room to grow 📈" : "Let's start from scratch 🌱"}</div>
+      </div>`;
+  }
+
+  // Per-pathway breakdown
+  const breakdown = document.getElementById("quiz-results-breakdown");
+  if (breakdown) {
+    const pathwayScores = {};
+    quizQuestions.forEach(q => {
+      const isCorrect = quizAnswers[q.id] === q.correct;
+      q.categories.forEach(cat => {
+        if (!pathwayScores[cat]) pathwayScores[cat] = { correct: 0, total: 0 };
+        pathwayScores[cat].total += 1;
+        if (isCorrect) pathwayScores[cat].correct += 1;
+      });
+    });
+
+    breakdown.innerHTML = `
+      <div class="breakdown-title">Your scores by area</div>
+      ${Object.entries(pathwayScores).map(([cat, s]) => {
+        const ratio = s.correct / s.total;
+        const label = ratio >= 0.67 ? "Strong" : ratio >= 0.34 ? "Moderate" : "Needs work";
+        const barW = Math.round(ratio * 100);
+        return `
+          <div class="breakdown-row">
+            <div class="breakdown-cat">${cat}</div>
+            <div class="breakdown-bar-track">
+              <div class="breakdown-bar-fill" style="width:${barW}%"></div>
+            </div>
+            <div class="breakdown-label ${ratio >= 0.67 ? "strong" : ratio >= 0.34 ? "moderate" : "weak"}">${label}</div>
+          </div>`;
+      }).join("")}
+    `;
   }
 }
 
 async function finishOnboarding() {
-  TOPICS.forEach(t => {
-    if (obRatings[t.id]) {
-      state.topics[t.id].familiarity = levelToFamiliarity(obRatings[t.id]);
-    } else {
-      state.topics[t.id].familiarity = 0;
-    }
-  });
   state.onboarded = true;
   await saveState(state);
   showScreen("feed");
   seedFeed();
 }
 
-function signalBarsHtml(level, max, weakClass) {
-  const bars = [1, 2, 3, 4, 5].map(i => `<span class="bar ${i <= level ? "on" : ""}"></span>`).join("");
-  return `<span class="signal-bars ${weakClass ? "weak" : ""}">${bars}</span>`;
-}
+
 
 /* ============================================================
    FEED

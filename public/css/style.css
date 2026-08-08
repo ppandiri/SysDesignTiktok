@@ -523,6 +523,172 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01e
 }
 
 /* ============================================================
+   QUIZ
+   ============================================================ */
+.ob-quiz-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.quiz-category-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(82,227,194,0.08);
+  border: 1px solid rgba(82,227,194,0.2);
+  border-radius: 6px;
+  padding: 3px 8px;
+  letter-spacing: 0.04em;
+}
+
+.quiz-card-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px calc(24px + var(--safe-bottom));
+  overflow-y: auto;
+}
+
+.quiz-question {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text);
+  margin-bottom: 20px;
+  font-family: var(--font-display);
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-option {
+  width: 100%;
+  text-align: left;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  line-height: 1.4;
+}
+.quiz-option:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--accent-dim);
+  transform: translateX(2px);
+}
+.quiz-option.selected {
+  border-color: var(--accent);
+  background: rgba(82,227,194,0.08);
+}
+.quiz-option.correct {
+  border-color: #34d399;
+  background: rgba(52,211,153,0.12);
+  color: #34d399;
+  font-weight: 600;
+}
+.quiz-option.wrong {
+  border-color: #f87171;
+  background: rgba(248,113,113,0.1);
+  color: #f87171;
+}
+.quiz-option.dimmed {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.quiz-feedback {
+  display: none;
+  margin-top: 14px;
+}
+.quiz-feedback-inner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: feedbackIn 0.2s ease;
+}
+@keyframes feedbackIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.quiz-feedback-inner.correct {
+  background: rgba(52,211,153,0.1);
+  border: 1px solid rgba(52,211,153,0.25);
+  color: #a7f3d0;
+}
+.quiz-feedback-inner.wrong {
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.2);
+  color: #fca5a5;
+}
+.feedback-icon {
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* RESULTS */
+.quiz-results-score { display: flex; justify-content: center; margin: 24px 0 20px; }
+.quiz-score-ring {
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 40px;
+  min-width: 180px;
+}
+.quiz-score-number {
+  font-size: 52px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--accent);
+  line-height: 1;
+}
+.quiz-score-number span { font-size: 22px; color: var(--text-dim); }
+.quiz-score-label { font-size: 14px; color: var(--text-dim); margin-top: 8px; }
+
+.quiz-results-breakdown { display: flex; flex-direction: column; gap: 14px; }
+.breakdown-title {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.breakdown-row { display: flex; align-items: center; gap: 10px; }
+.breakdown-cat { font-size: 13px; color: var(--text-dim); min-width: 130px; flex-shrink: 0; }
+.breakdown-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.breakdown-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 0.6s ease;
+}
+.breakdown-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  min-width: 70px;
+  text-align: right;
+}
+.breakdown-label.strong  { color: #34d399; }
+.breakdown-label.moderate { color: #fbbf24; }
+.breakdown-label.weak    { color: #f87171; }
+
+/* ============================================================
    BOTTOM NAV
    ============================================================ */
 .bottom-nav {

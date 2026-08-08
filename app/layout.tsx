@@ -20,15 +20,16 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="/css/style.css?v=1.0.5" />
+        <link rel="stylesheet" href="/css/style.css?v=1.0.6" />
       </head>
       <body>
         {children}
-        <script src="/js/data.js?v=1.0.5" defer />
-        <script src="/js/storage.js?v=1.0.5" defer />
-        <script src="/js/algorithm.js?v=1.0.5" defer />
-        <script src="/js/diagrams.js?v=1.0.5" defer />
-        <script src="/js/app.js?v=1.0.5" defer />
+        <script src="/js/data.js?v=1.0.6" defer />
+        <script src="/js/storage.js?v=1.0.6" defer />
+        <script src="/js/algorithm.js?v=1.0.6" defer />
+        <script src="/js/diagrams.js?v=1.0.6" defer />
+        <script src="/js/quiz.js?v=1.0.6" defer />
+        <script src="/js/app.js?v=1.0.6" defer />
       </body>
     </html>
   );

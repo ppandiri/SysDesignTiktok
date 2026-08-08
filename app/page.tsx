@@ -61,20 +61,43 @@ export default function Home() {
           <p style={{ color: "var(--text-dim)", fontSize: "14px", margin: "8px 0 18px" }}>Select the topics you want in your feed. Fundamentals is included by default.</p>
           <div id="ob-pathways-list" className="pathways-grid"></div>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
-            <button className="btn btn-primary" id="ob-pathway-continue-btn">Rate topic familiarity →</button>
+            <button className="btn btn-primary" id="ob-pathway-continue-btn">Start quiz →</button>
           </div>
         </div>
 
-        <div id="ob-survey-view" style={{ display: "none", flex: 1, flexDirection: "column" }}>
+        {/* QUIZ VIEW — replaces old familiarity self-rating survey */}
+        <div id="ob-quiz-view" style={{ display: "none", flex: 1, flexDirection: "column" }}>
           <div className="ob-header">
-            <div className="tag-chip" id="ob-step-label">TOPIC 1 / 16</div>
-            <div className="ob-progress-track"><div className="ob-progress-fill" id="ob-progress-fill" style={{ width: "0%" }}></div></div>
+            <div className="ob-quiz-meta">
+              <span className="tag-chip" id="quiz-step-label">Q 1 / 10</span>
+              <span className="quiz-category-badge" id="quiz-category-badge">Fundamentals</span>
+            </div>
+            <div className="ob-progress-track">
+              <div className="ob-progress-fill" id="quiz-progress-fill" style={{ width: "0%" }}></div>
+            </div>
           </div>
-          <div className="ob-card-wrap">
-            <div className="ob-topic-card" id="ob-topic-card"></div>
-            <div className="ob-nav-row">
-              <button className="btn btn-ghost" id="ob-back-btn">Back</button>
-              <button className="btn btn-primary" id="ob-next-btn" disabled>Next</button>
+          <div className="quiz-card-wrap">
+            <div className="quiz-question" id="quiz-question-text"></div>
+            <div className="quiz-options" id="quiz-options"></div>
+            <div className="quiz-feedback" id="quiz-feedback"></div>
+            <div className="ob-nav-row" style={{ marginTop: "16px" }}>
+              <button className="btn btn-ghost" id="quiz-back-btn">Back</button>
+              <button className="btn btn-primary" id="quiz-next-btn" disabled>Next →</button>
+            </div>
+          </div>
+        </div>
+
+        {/* QUIZ RESULTS VIEW */}
+        <div id="ob-quiz-results-view" style={{ display: "none", flex: 1, flexDirection: "column" }}>
+          <div className="ob-intro" style={{ justifyContent: "flex-start" }}>
+            <div className="ob-intro-header">
+              <div className="eyebrow">Quiz Complete</div>
+              <div id="ob-auth-container-results"></div>
+            </div>
+            <div className="quiz-results-score" id="quiz-score-display"></div>
+            <div className="quiz-results-breakdown" id="quiz-results-breakdown"></div>
+            <div className="ob-intro-actions" style={{ marginTop: "24px" }}>
+              <button className="btn btn-primary" id="quiz-finish-btn">Go to my feed →</button>
             </div>
           </div>
         </div>
